@@ -93,7 +93,13 @@ spec:
       restartPolicy: Never
 ```
 
-Run the benchmark for MySQL through a Pod:
+Post the job to Kubernetes:
+
+```
+$ kubectl create -f sysbench-prepare-job.yml
+```
+
+Once the sysbench database is prepared, run the benchmark for MySQL through a Pod:
 
 ```yaml
 apiVersion: v1
@@ -123,6 +129,12 @@ spec:
     image: severalnines/sysbench
     name: sysbench
   restartPolicy: Never
+```
+
+Post the job to Kubernetes:
+
+```
+$ kubectl create -f sysbench-pod.yml
 ```
 
 See the sysbench reporting output using ``kubectl``:
