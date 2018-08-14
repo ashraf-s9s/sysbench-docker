@@ -10,8 +10,8 @@ Create a MySQL database and user for sysbench:
 
 ```bash
 mysql> CREATE SCHEMA sbtest;
-mysql> GRANT ALL PRIVILEGES ON sbtest.* to sbtest@'%' IDENTIFIED BY 'password';
-mysql> FLUSH PRIVILEGES;
+mysql> CREATE USER sbtest@'%' IDENTIFIED BY 'password';
+mysql> GRANT ALL PRIVILEGES ON sbtest.* to sbtest@'%';
 ```
 
 Or simply use the respective MySQL's image environment variables to create the database and user when running the MySQL container.
@@ -21,12 +21,15 @@ Or simply use the respective MySQL's image environment variables to create the d
 Prepare the sysbench database:
 
 ```bash
-$ docker run --name=sb severalnines/sysbench \
+$ docker run \
+--rm=true \
+--name=sb-prepare \
+severalnines/sysbench \
 sysbench \
 --db-driver=mysql \
 --oltp-table-size=100000 \
 --oltp-tables-count=24 \
---threads=4 \
+--threads=1 \
 --mysql-host=10.0.0.51 \
 --mysql-port=3306 \
 --mysql-user=sbtest \
@@ -38,15 +41,16 @@ run
 Run the benchmark for MySQL:
 
 ```bash
-$ docker run --name=sb severalnines/sysbench \
+$ docker run \
+--name=sb-run \
+severalnines/sysbench \
 sysbench \
 --db-driver=mysql \
 --report-interval=2 \
 --mysql-table-engine=innodb \
 --oltp-table-size=100000 \
 --oltp-tables-count=24 \
---oltp-test-mode=complex \
---threads=4 \
+--threads=64 \
 --time=99999 \
 --mysql-host=10.0.0.51 \
 --mysql-port=3306 \
@@ -55,11 +59,7 @@ sysbench \
 /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 run
 ```
-See the sysbench reporting output using ``docker logs``:
 
-```bash
-$ docker logs -f sb
-```
 
 ### Kubernetes ###
 
@@ -83,7 +83,7 @@ spec:
         - --db-driver=mysql
         - --oltp-table-size=100000
         - --oltp-tables-count=24
-        - --threads=4
+        - --threads=1
         - --mysql-host=galera
         - --mysql-port=3306
         - --mysql-user=sbtest
@@ -117,8 +117,7 @@ spec:
     - --mysql-table-engine=innodb
     - --oltp-table-size=100000
     - --oltp-tables-count=24
-    - --oltp-test-mode=complex
-    - --threads=4
+    - --threads=64
     - --time=99999
     - --mysql-host=galera
     - --mysql-port=3306
