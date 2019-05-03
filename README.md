@@ -1,6 +1,6 @@
 # sysbench on Docker #
 
-Sysbench 1.0 on Docker environment.
+Sysbench 1.0.17 on Docker environment.
 
 ## Example Usage ##
 
